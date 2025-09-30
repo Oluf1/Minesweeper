@@ -7,7 +7,7 @@ class Minesweeper_main():
         self.root = Tk.Tk()
         self.field_list = []
         self.combodiffs_list = ["Easy","Medium","Hard"]
-        self.diffs_list = [(9,10),(16,40),(26,120)]
+        self.diffs_list = [(9,10),(16,40),(26,60)]
         self.revealed = []
         self.flagged = []
         self.buttons = {}
@@ -79,8 +79,12 @@ class Minesweeper_main():
             
     def on_revealed_zero(self,pos_x,pos_y,dbs,num_pressed):
         #print(dbs)
+        if self.field_list[pos_x][pos_y] ==20 and (pos_x,pos_y) not in self.flagged:
+            self.lost(pos_x,pos_y)
+            
         if(pos_x,pos_y) not in self.revealed and self.field_list[pos_x][pos_y] ==0 :
-            self.buttons[(pos_x,pos_y)].place_forget()
+            self.buttons[(pos_x,pos_y)].destroy()
+            self.buttons.pop((pos_x,pos_y))
             self.revealed.append((pos_x,pos_y))
             richtungen = [(-1, -1), (-1, 0), (-1, 1),
                         ( 0, -1),          ( 0, 1),
@@ -91,10 +95,10 @@ class Minesweeper_main():
                     self.on_revealed_zero(nx,ny,"on_zero",False)
         elif (pos_x,pos_y) not in self.revealed and self.field_list[pos_x][pos_y] !=20 :
             self.on_revealed_exno(pos_x,pos_y)
-            print("dbug 2")
-        elif (pos_x,pos_y) not in self.flagged and (pos_x,pos_y)==20:
-            self.lost(pos_x,pos_y)
+        
+
         elif  (pos_x,pos_y) in self.revealed and num_pressed== True:
+            self.buttons[(pos_x,pos_y)].config(state="disabled")
             richtungen = [(-1, -1), (-1, 0), (-1, 1),
                         ( 0, -1),          ( 0, 1),
                         ( 1, -1), ( 1, 0), ( 1, 1)]
@@ -103,9 +107,28 @@ class Minesweeper_main():
                 if 0 <= nx < self.field_size and 0 <= ny < self.field_size:
                     if (nx,ny) not in self.revealed:
                         self.on_revealed_zero(nx,ny,"on_zero_2",False)
-    
-    def lost(self,pos_x,pos_y):
-        print("womp womp wom")
+
+    def lost(self, pos_x, pos_y):
+    # Alle Buttons zuerst deaktivieren
+        for button in self.buttons.values():
+            button.config(state="disabled")
+
+        # Buttons als Liste speichern
+        buttons = list(self.buttons.values())
+
+        def delete_next():
+            if buttons:
+                btn = buttons.pop(0)   
+                btn.destroy()
+                btn = buttons.pop(0)
+                btn.destroy()          
+                self.root.after(5, delete_next)  
+            else:
+                
+                verloren = ttk.Label(self.root, text="Du hast verloren")
+                verloren.pack()
+
+        delete_next()
     def win(self):
         print("you Won!")
     def on_revealed_exno(self,pos_x,pos_y):
