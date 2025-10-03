@@ -13,6 +13,9 @@ class Minesweeper_main():
         self.buttons = {}
         self.mines = set()
         self.image_mine = Tk.PhotoImage(file="Minesweeper/MineSweeper_Flagge.png")
+        self.richtungen=  [(-1, -1), (-1, 0), (-1, 1),
+                    ( 0, -1),          ( 0, 1),
+                        ( 1, -1), ( 1, 0), ( 1, 1)]
         
         self.root.geometry("300x250")
         
@@ -35,10 +38,8 @@ class Minesweeper_main():
                     self.field_list[x][y] = -1  
                     self.mines.add((x,y))
                     
-                    richtungen = [(-1, -1), (-1, 0), (-1, 1),
-                                ( 0, -1),          ( 0, 1),
-                                ( 1, -1), ( 1, 0), ( 1, 1)]
-                    for dx, dy in richtungen:
+                    
+                    for dx, dy in self.richtungen:
                         nx, ny = x + dx, y + dy
                         if 0 <= nx < n and 0 <= ny < n:
                             if self.field_list[nx][ny] != -1:
@@ -82,10 +83,8 @@ class Minesweeper_main():
             
     def on_revealed_pressed(self,pos_x,pos_y):
         self.buttons[(pos_x,pos_y)].config(state="disabled")
-        richtungen = [(-1, -1), (-1, 0), (-1, 1),
-                    ( 0, -1),          ( 0, 1),
-                        ( 1, -1), ( 1, 0), ( 1, 1)]
-        for dx, dy in richtungen:
+        
+        for dx, dy in self.richtungen:
             nx, ny = pos_x + dx, pos_y + dy
             if 0 <= nx < self.field_size and 0 <= ny < self.field_size:
                 if (nx,ny) not in self.revealed:
@@ -102,10 +101,7 @@ class Minesweeper_main():
                                                borderwidth=0,       
                                                 highlightthickness=0)
             self.revealed.add((pos_x,pos_y))
-            richtungen = [(-1, -1), (-1, 0), (-1, 1),
-                        ( 0, -1),          ( 0, 1),
-                        ( 1, -1), ( 1, 0), ( 1, 1)]
-            for dx, dy in richtungen:
+            for dx, dy in self.richtungen:
                 nx, ny = pos_x + dx, pos_y + dy
                 if 0 <= nx < self.field_size and 0 <= ny < self.field_size:
                     self.on_revealed_zero(nx,ny)
