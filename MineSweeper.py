@@ -67,7 +67,7 @@ class Minesweeper_main():
         elif (pos_x,pos_y) in self.flagged:
             
             if  self.field_list[pos_x][pos_y] ==0:
-                self.on_revealed_zero(pos_x,pos_y,"on pressed",False)
+                self.on_revealed_zero(pos_x,pos_y)
             else: 
                 self.revealed.add((pos_x,pos_y))
                 self.on_revealed_exno(pos_x,pos_y)
@@ -89,8 +89,8 @@ class Minesweeper_main():
             nx, ny = pos_x + dx, pos_y + dy
             if 0 <= nx < self.field_size and 0 <= ny < self.field_size:
                 if (nx,ny) not in self.revealed:
-                    self.on_revealed_zero(nx,ny,"on_zero_2",False)
-    def on_revealed_zero(self,pos_x,pos_y,dbs,num_pressed):
+                    self.on_revealed_zero(nx,ny)
+    def on_revealed_zero(self,pos_x,pos_y):
         #print(dbs)
         print("tst1")
         if self.flagged==self.mines:
@@ -108,7 +108,7 @@ class Minesweeper_main():
             for dx, dy in richtungen:
                 nx, ny = pos_x + dx, pos_y + dy
                 if 0 <= nx < self.field_size and 0 <= ny < self.field_size:
-                    self.on_revealed_zero(nx,ny,"on_zero",False)
+                    self.on_revealed_zero(nx,ny)
         elif (pos_x,pos_y) not in self.revealed and  (pos_x,pos_y) not in self.mines:
             self.on_revealed_exno(pos_x,pos_y)
         elif (pos_x,pos_y) in self.mines and (pos_x,pos_y) not in self.flagged:
