@@ -1,17 +1,18 @@
 import tkinter as Tk
 from tkinter import ttk 
 import random
-import time 
+import time
 class Minesweeper_main():
     def __init__(self):
         self.root = Tk.Tk()
         self.field_list = []
         self.combodiffs_list = ["Easy","Medium","Hard"]
-        self.diffs_list = [(9,10),(16,40),(26,60)]
-        self.revealed = []
-        self.flagged = []
+        self.diffs_list = [(9,10),(16,40),(26,100)]
+        self.revealed = set()
+        self.flagged = set()
         self.buttons = {}
-        self.mines = []
+        self.mines = set()
+        self.image_mine = Tk.PhotoImage(file="Minesweeper/MineSweeper_Flagge.png")
         
         self.root.geometry("300x250")
         
@@ -31,9 +32,9 @@ class Minesweeper_main():
         for _ in range(diff[1]):
             while True:
                 x, y = random.randint(0, n-1), random.randint(0, n-1)
-                if self.field_list[x][y] == 0:  
+                if self.field_list[x][y] != 20:  
                     self.field_list[x][y] = 20  
-
+                    self.mines.add((x,y))
                     
                     richtungen = [(-1, -1), (-1, 0), (-1, 1),
                                 ( 0, -1),          ( 0, 1),
@@ -47,8 +48,8 @@ class Minesweeper_main():
         self.place_buttons(n,diff)
 
     def place_buttons(self,buttoncount_x,diff):
-        b_size= 20
-        self.root.geometry(f"{b_size*buttoncount_x+25}x{b_size*buttoncount_x+50}")
+        b_size= 25
+        self.root.geometry(f"{b_size*buttoncount_x}x{b_size*buttoncount_x+50}")
         self.root.title(f"difficulty:{self.combodiffs_list[self.diffs_list.index(diff)]}")
         self.diffs_box.pack_forget()
         self.get_diffbtn.pack_forget()
@@ -69,23 +70,39 @@ class Minesweeper_main():
             if  self.field_list[pos_x][pos_y] ==0:
                 self.on_revealed_zero(pos_x,pos_y,"on pressed",False)
             else: 
-                self.revealed.append((pos_x,pos_y))
+                self.revealed.add((pos_x,pos_y))
                 self.on_revealed_exno(pos_x,pos_y)
             
         else:
             button.config(bg="red")
-            self.flagged.append((pos_x,pos_y))
+            print(self.field_list[pos_x][pos_y])
+            self.flagged.add((pos_x,pos_y))
+            print(sorted(self.flagged))
+            if sorted(self.flagged)==sorted(self.mines):
+                self.win()
             
-            
+    def on_revealed_pressed(self,pos_x,pos_y):
+        self.buttons[(pos_x,pos_y)].config(state="disabled")
+        richtungen = [(-1, -1), (-1, 0), (-1, 1),
+                    ( 0, -1),          ( 0, 1),
+                        ( 1, -1), ( 1, 0), ( 1, 1)]
+        for dx, dy in richtungen:
+            nx, ny = pos_x + dx, pos_y + dy
+            if 0 <= nx < self.field_size and 0 <= ny < self.field_size:
+                if (nx,ny) not in self.revealed:
+                    self.on_revealed_zero(nx,ny,"on_zero_2",False)
     def on_revealed_zero(self,pos_x,pos_y,dbs,num_pressed):
         #print(dbs)
-        if self.field_list[pos_x][pos_y] ==20 and (pos_x,pos_y) not in self.flagged:
-            self.lost(pos_x,pos_y)
-            
+        print("tst1")
+        if sorted(self.flagged)==sorted(self.mines):
+            self.win()
         if(pos_x,pos_y) not in self.revealed and self.field_list[pos_x][pos_y] ==0 :
-            self.buttons[(pos_x,pos_y)].destroy()
-            self.buttons.pop((pos_x,pos_y))
-            self.revealed.append((pos_x,pos_y))
+            
+            self.flagged.discard((pos_x,pos_y))
+            self.buttons[(pos_x,pos_y)].config(state="disabled",bg="white",
+                                               borderwidth=0,       
+                                                highlightthickness=0)
+            self.revealed.add((pos_x,pos_y))
             richtungen = [(-1, -1), (-1, 0), (-1, 1),
                         ( 0, -1),          ( 0, 1),
                         ( 1, -1), ( 1, 0), ( 1, 1)]
@@ -93,20 +110,24 @@ class Minesweeper_main():
                 nx, ny = pos_x + dx, pos_y + dy
                 if 0 <= nx < self.field_size and 0 <= ny < self.field_size:
                     self.on_revealed_zero(nx,ny,"on_zero",False)
-        elif (pos_x,pos_y) not in self.revealed and self.field_list[pos_x][pos_y] !=20 :
+        elif (pos_x,pos_y) not in self.revealed and  (pos_x,pos_y) not in self.mines:
             self.on_revealed_exno(pos_x,pos_y)
+        elif (pos_x,pos_y) in self.mines and (pos_x,pos_y) not in self.flagged:
+            self.lost(pos_x,pos_y)
         
 
-        elif  (pos_x,pos_y) in self.revealed and num_pressed== True:
-            self.buttons[(pos_x,pos_y)].config(state="disabled")
-            richtungen = [(-1, -1), (-1, 0), (-1, 1),
-                        ( 0, -1),          ( 0, 1),
-                        ( 1, -1), ( 1, 0), ( 1, 1)]
-            for dx, dy in richtungen:
-                nx, ny = pos_x + dx, pos_y + dy
-                if 0 <= nx < self.field_size and 0 <= ny < self.field_size:
-                    if (nx,ny) not in self.revealed:
-                        self.on_revealed_zero(nx,ny,"on_zero_2",False)
+    def on_revealed_exno(self,pos_x,pos_y):
+        
+        self.flagged.discard((pos_x,pos_y))
+        if sorted(self.flagged)==sorted(self.mines):
+            self.win()
+        self.buttons[(pos_x,pos_y)].config(
+        command=lambda x = pos_x, y=pos_y: self.on_revealed_pressed(x,y),
+        text=self.field_list[pos_x][pos_y],
+        bg="white",image=None   
+        )
+        self.revealed.add((pos_x,pos_y))
+
 
     def lost(self, pos_x, pos_y):
     # Alle Buttons zuerst deaktivieren
@@ -120,9 +141,10 @@ class Minesweeper_main():
             if buttons:
                 btn = buttons.pop(0)   
                 btn.destroy()
-                btn = buttons.pop(0)
-                btn.destroy()          
-                self.root.after(5, delete_next)  
+                if buttons:
+                    btn = buttons.pop(0)
+                    btn.destroy()          
+                self.root.after(2, delete_next)  
             else:
                 
                 verloren = ttk.Label(self.root, text="Du hast verloren")
@@ -131,14 +153,28 @@ class Minesweeper_main():
         delete_next()
     def win(self):
         print("you Won!")
-    def on_revealed_exno(self,pos_x,pos_y):
-        if (pos_x,pos_y) in self.flagged:
-            self.flagged.remove((pos_x,pos_y))
-        self.buttons[(pos_x,pos_y)].config(command=lambda x = pos_x, y=pos_y: self.on_revealed_zero(x,y,"on Exno",True),
-        text=self.field_list[pos_x][pos_y],
-        bg="white"   
-        )
-        self.revealed.append((pos_x,pos_y))
+        for button in self.buttons.values():
+            button.config(state="disabled")
+
+        # Buttons als Liste speichern
+        buttons = list(self.buttons.values())
+
+        def delete_nexts():
+            if buttons:
+                btn = buttons.pop(0)   
+                btn.destroy()
+                if buttons:
+                    btn = buttons.pop(0)
+                    btn.destroy()          
+                self.root.after(2, delete_nexts)  
+            else:
+                
+                gewonnen= ttk.Label(self.root, text="Du hast gewonnen")
+                gewonnen.pack()
+
+        delete_nexts()
+        
+    
         
                     
                     
