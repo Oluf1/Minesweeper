@@ -22,7 +22,6 @@ class Minesweeper_main():
         
         self.diffs_box.pack()
         self.get_diffbtn.pack()
-        self.root.mainloop() 
     def generate_field(self,diff):
         
         n = diff[0]
@@ -32,8 +31,8 @@ class Minesweeper_main():
         for _ in range(diff[1]):
             while True:
                 x, y = random.randint(0, n-1), random.randint(0, n-1)
-                if self.field_list[x][y] != 20:  
-                    self.field_list[x][y] = 20  
+                if self.field_list[x][y] != -1:  
+                    self.field_list[x][y] = -1  
                     self.mines.add((x,y))
                     
                     richtungen = [(-1, -1), (-1, 0), (-1, 1),
@@ -42,7 +41,7 @@ class Minesweeper_main():
                     for dx, dy in richtungen:
                         nx, ny = x + dx, y + dy
                         if 0 <= nx < n and 0 <= ny < n:
-                            if self.field_list[nx][ny] != 20:
+                            if self.field_list[nx][ny] != -1:
                                 self.field_list[nx][ny] += 1
                     break
         self.place_buttons(n,diff)
@@ -63,7 +62,7 @@ class Minesweeper_main():
                                  height=b_size,width=b_size
                                  )
     def on_pressed(self,pos_x,pos_y,button):
-        if (pos_x,pos_y) in self.flagged and self.field_list[pos_x][pos_y]==20:
+        if (pos_x,pos_y) in self.flagged and self.field_list[pos_x][pos_y]==-1:
             self.lost(pos_x,pos_y)
         elif (pos_x,pos_y) in self.flagged:
             
@@ -78,7 +77,7 @@ class Minesweeper_main():
             print(self.field_list[pos_x][pos_y])
             self.flagged.add((pos_x,pos_y))
             print(sorted(self.flagged))
-            if sorted(self.flagged)==sorted(self.mines):
+            if self.flagged==self.mines:
                 self.win()
             
     def on_revealed_pressed(self,pos_x,pos_y):
@@ -94,7 +93,7 @@ class Minesweeper_main():
     def on_revealed_zero(self,pos_x,pos_y,dbs,num_pressed):
         #print(dbs)
         print("tst1")
-        if sorted(self.flagged)==sorted(self.mines):
+        if self.flagged==self.mines:
             self.win()
         if(pos_x,pos_y) not in self.revealed and self.field_list[pos_x][pos_y] ==0 :
             
@@ -119,7 +118,7 @@ class Minesweeper_main():
     def on_revealed_exno(self,pos_x,pos_y):
         
         self.flagged.discard((pos_x,pos_y))
-        if sorted(self.flagged)==sorted(self.mines):
+        if self.flagged==self.mines:
             self.win()
         self.buttons[(pos_x,pos_y)].config(
         command=lambda x = pos_x, y=pos_y: self.on_revealed_pressed(x,y),
@@ -179,16 +178,16 @@ class Minesweeper_main():
                     
                     
     def pick_diff(self):
-        diff_temp = self.diffs_box.get()
+        difficulty_temporary = self.diffs_box.get()
         for i,e in enumerate(self.combodiffs_list):
-            if e == diff_temp:
-                diff_temp =self.diffs_list[i]
-        if diff_temp in self.combodiffs_list:
+            if e == difficulty_temporary:
+                difficulty_temporary =self.diffs_list[i]
+        if difficulty_temporary in self.combodiffs_list:
             print("Error: Not a Difficulty")
-        self.generate_field(diff_temp)
+        self.generate_field(difficulty_temporary)
         
                            
 
 if __name__ == "__main__":
-    Minesweeper_main()
-    
+    game = Minesweeper_main()
+    game.root.mainloop()
