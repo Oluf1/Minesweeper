@@ -26,7 +26,8 @@ class Minesweeper_main():
         self.diffs_box.pack()
         self.get_diffbtn.pack()
     def generate_field(self,diff):
-        
+        self.mines.clear()
+        self.flagged.clear
         n = diff[0]
         self.field_size = n
         self.field_list = [[0 for _ in range(n)] for _ in range(n)]
@@ -63,11 +64,11 @@ class Minesweeper_main():
                                  height=b_size,width=b_size
                                  )
     def on_pressed(self,pos_x,pos_y,button):
-        if (pos_x,pos_y) in self.flagged and self.field_list[pos_x][pos_y]==-1:
+        if (pos_x,pos_y) in self.flagged and self.field_list[pos_x][pos_y] == -1:
             self.lost(pos_x,pos_y)
         elif (pos_x,pos_y) in self.flagged:
             
-            if  self.field_list[pos_x][pos_y] ==0:
+            if  self.field_list[pos_x][pos_y] == 0:
                 self.on_revealed_zero(pos_x,pos_y)
             else: 
                 self.revealed.add((pos_x,pos_y))
@@ -78,7 +79,7 @@ class Minesweeper_main():
             print(self.field_list[pos_x][pos_y])
             self.flagged.add((pos_x,pos_y))
             print(sorted(self.flagged))
-            if self.flagged==self.mines:
+            if self.flagged == self.mines:
                 self.win()
             
     def on_revealed_pressed(self,pos_x,pos_y):
@@ -90,11 +91,11 @@ class Minesweeper_main():
                 if (nx,ny) not in self.revealed:
                     self.on_revealed_zero(nx,ny)
     def on_revealed_zero(self,pos_x,pos_y):
-        #print(dbs)
+        
         print("tst1")
-        if self.flagged==self.mines:
+        if self.flagged == self.mines:
             self.win()
-        if(pos_x,pos_y) not in self.revealed and self.field_list[pos_x][pos_y] ==0 :
+        if(pos_x,pos_y) not in self.revealed and self.field_list[pos_x][pos_y] == 0 :
             
             self.flagged.discard((pos_x,pos_y))
             self.buttons[(pos_x,pos_y)].config(state="disabled",bg="white",
@@ -114,7 +115,7 @@ class Minesweeper_main():
     def on_revealed_exno(self,pos_x,pos_y):
         
         self.flagged.discard((pos_x,pos_y))
-        if self.flagged==self.mines:
+        if self.flagged == self.mines:
             self.win()
         self.buttons[(pos_x,pos_y)].config(
         command=lambda x = pos_x, y=pos_y: self.on_revealed_pressed(x,y),
@@ -125,11 +126,11 @@ class Minesweeper_main():
 
 
     def lost(self, pos_x, pos_y):
-    # Alle Buttons zuerst deaktivieren
+    
         for button in self.buttons.values():
             button.config(state="disabled")
 
-        # Buttons als Liste speichern
+        
         buttons = list(self.buttons.values())
 
         def delete_next():
@@ -142,8 +143,8 @@ class Minesweeper_main():
                 self.root.after(2, delete_next)  
             else:
                 
-                verloren = ttk.Label(self.root, text="Du hast verloren")
-                verloren.pack()
+                lost_label = ttk.Label(self.root, text="Du hast verloren")
+                lost_label.pack()
 
         delete_next()
     def win(self):
@@ -151,7 +152,7 @@ class Minesweeper_main():
         for button in self.buttons.values():
             button.config(state="disabled")
 
-        # Buttons als Liste speichern
+        
         buttons = list(self.buttons.values())
 
         def delete_nexts():
@@ -164,8 +165,8 @@ class Minesweeper_main():
                 self.root.after(2, delete_nexts)  
             else:
                 
-                gewonnen= ttk.Label(self.root, text="Du hast gewonnen")
-                gewonnen.pack()
+                won_label = ttk.Label(self.root, text="Du hast gewonnen")
+                won_label.pack()
 
         delete_nexts()
         
